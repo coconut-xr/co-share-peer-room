@@ -1,9 +1,9 @@
 import { Connection, RootStore, StoreLink } from "co-share"
 import { useEffect, useState } from "react"
-import { RoomStore } from "../../room"
+import { RoomStore } from ".."
 import { Subscription } from "rxjs"
 import { filter, map } from "rxjs/operators"
-import { connectPeer } from ".."
+import { connectPeer } from "co-share-peer"
 import { Instance, Options } from "simple-peer"
 
 export function useRoom(

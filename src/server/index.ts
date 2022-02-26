@@ -1,7 +1,7 @@
 import { rootStore } from "co-share"
 import { connectionMiddleware } from "co-share-socketio/server"
 import { Server } from "socket.io"
-import { RoomStore } from "co-share-peer/room"
+import { RoomStore } from ".."
 
 const io = new Server({
     cors: {

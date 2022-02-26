@@ -1,14 +1,40 @@
-import { useRoom, useIncommingPeerStreams, useOutgoingPeerStream } from "co-share-peer/react"
-import { Suspense, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Instance } from "simple-peer"
+import { useIncommingPeerStreams, useOutgoingPeerStream, usePeerConnection } from "co-share-peer/react"
+import { Suspense, useCallback, useMemo, useState } from "react"
+import { Observable } from "rxjs"
+import { Instance, Options } from "simple-peer"
 import { Connection, RootStore } from "co-share"
-import { MediaDevicesControl } from "../src/media-devices"
-import { StreamType, useMediaDevices, useSelectDefaultMediaDevice, useStreamType } from "co-media"
-import { Error } from "@material-ui/icons"
+import { useMediaDevices, useSelectDefaultMediaDevice } from "co-media"
+import { MediaDevicesControl, Stream } from "../components"
+import { Header } from "../components/header"
+import { Footer } from "../components/footer"
+import MD from "../content/stream.md"
 import { SocketIOConnection } from "co-share-socketio/react"
 import { useStoreSubscription } from "co-share/react"
-import { RoomStore } from "co-share-peer/room"
 import { Socket } from "socket.io-client"
+import { RoomStore } from "co-share-peer-room"
+import { useRoom } from "co-share-peer-room/react"
+
+export default function Index() {
+    return (
+        <div className="d-flex flex-column fullscreen">
+            <Header selectedIndex={1} />
+            <div className="d-flex flex-column justify-content-stretch container-lg">
+                <div style={{ height: "calc(90vh - 176px)" }} className="d-flex flex-row-responsive border mt-3">
+                    <Environment />
+                </div>
+                <div className="p-3 flex-basis-0 flex-grow-1">
+                    <MD />
+                </div>
+            </div>
+            <Footer />
+        </div>
+    )
+}
+
+const optionsC1: Options = {
+    initiator: true,
+}
+const optionsC2: Options = {}
 
 function generateUserData(instance: Instance) {
     return { instance }
@@ -18,9 +44,9 @@ function socketUserData(socket: Socket) {
     return { id: socket.id }
 }
 
-const url = typeof global.window === "undefined" ? "" : `${window.location.protocol}//${window.location.hostname}:8081`
+const url = typeof global.window === "undefined" ? "" : `${window.location.protocol}//${window.location.hostname}:8082`
 
-export default function Index() {
+export function Environment() {
     return (
         <SocketIOConnection userData={socketUserData} fallback="Connecting ..." url={url}>
             <Suspense fallback={"Loading ..."}>
@@ -69,17 +95,12 @@ function ConnectedPage({ connections }: { connections: Array<Connection> }) {
     const screenCapture = useSelectDefaultMediaDevice("screencapture", devices)
 
     return (
-        <div className="fullscreen d-flex flex-column">
-            <div className="d-flex flex-grow-1 flex-row flex-wrap justify-content-around overflow-hidden">
+        <div className="d-flex flex-grow-1 flex-column overflow-hidden flex-basis-0">
+            <div className="d-flex flex-grow-1 flex-basis-0 flex-row overflow-hidden justify-content-around overflow-hidden">
                 {connections.map((connection) => (
-                    <ConnectionPage
-                        outgoingStreams={outgoingStreams}
-                        key={connection.userData.id}
-                        connection={connection}
-                    />
+                    <SlaveStreamPage connection={connection} outgoingStreams={outgoingStreams} />
                 ))}
             </div>
-
             <div className="d-flex flex-row align-items-center justify-content-center">
                 <MediaDevicesControl
                     audioInput={audioInput}
@@ -94,7 +115,7 @@ function ConnectedPage({ connections }: { connections: Array<Connection> }) {
     )
 }
 
-function ConnectionPage({
+function SlaveStreamPage({
     outgoingStreams,
     connection,
 }: {
@@ -102,46 +123,16 @@ function ConnectionPage({
     connection: Connection
 }) {
     const incommingStreams = useIncommingPeerStreams(connection.userData.peer)
-
     useOutgoingPeerStream(connection.userData.peer, outgoingStreams)
 
     return (
-        <div className="d-flex flex-column p-3 m-3 border rounded overflow-hidden flex-grow-1">
-            <h3>{connection.userData.id}</h3>
-            <div className="d-flex flex-row flex-grow-1 flex-column overflow-hidden">
-                {incommingStreams.map((stream) => (
-                    <Stream key={stream.id} stream={stream} />
-                ))}
-            </div>
+        <div className="d-flex flex-grow-1 flex-basis-0 flex-column overflow-hidden justify-content-around overflow-hidden">
+            {incommingStreams.map((stream) => (
+                <Stream key={stream.id} stream={stream} />
+            ))}
+            <h5 className="text-center">{connection.userData.id}</h5>
         </div>
     )
-}
-
-export function Stream({ stream }: { stream: MediaStream }): JSX.Element {
-    const type = useStreamType(stream)
-    const ref = useRef<HTMLVideoElement | null>(null)
-    useLayoutEffect(() => {
-        if (ref.current != null) {
-            ref.current.srcObject = stream
-            ref.current.play()
-        }
-    }, [stream])
-    switch (type) {
-        case StreamType.AUDIO:
-            return <audio ref={ref} />
-        case StreamType.VIDEO:
-            return (
-                <video
-                    style={{ minHeight: 0, minWidth: 0 }}
-                    playsInline
-                    className="flex-grow-1 flex-basis-0"
-                    ref={ref}
-                />
-            )
-        default:
-            ref.current = null
-            return <Error />
-    }
 }
 
 function filterNull<T>(val: T | undefined): val is T {

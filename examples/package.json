@@ -1,0 +1,33 @@
+{
+    "name": "examples",
+    "version": "1.0.0",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "generate": "next build && next export"
+    },
+    "dependencies": {
+        "@mapbox/rehype-prism": "^0.8.0",
+        "@material-ui/core": "^4.12.3",
+        "@material-ui/icons": "^4.11.2",
+        "@mdx-js/loader": "^2.0.0",
+        "@next/mdx": "^12.1.0",
+        "bootstrap": "^5.1.3",
+        "co-media": "^1.0.2",
+        "co-share": "^3.2.6",
+        "co-share-peer": "^1.0.0",
+        "co-share-peer-room": "file:../dist",
+        "co-share-socketio": "^3.2.7",
+        "next": "^12.1.0",
+        "next-images": "^1.8.4",
+        "react-dom": "^17.0.2",
+        "react-loading": "^2.0.3",
+        "react-suspend": "^0.0.1",
+        "rxjs": "^7.5.4",
+        "sass": "^1.49.9"
+    },
+    "devDependencies": {
+        "typescript": "^4.5.5"
+    }
+}
