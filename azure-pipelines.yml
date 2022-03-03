@@ -1,0 +1,46 @@
+pool:
+  vmImage: ubuntu-20.04
+
+trigger:
+  - main
+
+steps:
+  - checkout: self
+    submodules: true
+
+  - task: "Npm@1"
+    displayName: "install"
+    inputs:
+      command: "install"
+      verbose: false
+
+
+  - task: "Npm@1"
+    displayName: "build"
+    inputs:
+      command: custom
+      verbose: false
+      customCommand: "run build"
+
+  
+  - task: DeleteFiles@1
+    displayName: 'remove node_modules & examples'
+    inputs:
+      contents: |
+        node_modules
+        examples
+  
+  
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(Build.SourcesDirectory)'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/files.zip'
+      replaceExistingArchive: true
+  
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
