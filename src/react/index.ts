@@ -10,7 +10,7 @@ export function useRoom(
     room: RoomStore,
     rootStore: RootStore,
     generateOptions: (clientId: string) => Options,
-    generateUserData?: (instance: Instance) => any
+    generateUserData?: (instance: Instance) => any,
 ): Array<Connection> {
     const [connections, setConnections] = useState<Array<Connection>>([])
     useEffect(() => {

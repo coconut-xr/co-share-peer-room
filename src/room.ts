@@ -5,8 +5,12 @@ export class RoomStore extends Store {
     public subscriber: Subscriber<RoomStore, [Array<string>]> = Subscriber.create(
         RoomStore,
         (connection, accept, deny) => {
-            this.addClient(connection.userData.id)
-            accept(this.clients.filter((id) => id != connection.userData.id))
+            if (this.clients.length >= this.maxClients) {
+                deny(`too many clients in this room`)
+            } else {
+                this.addClient(connection.userData.id)
+                accept(this.clients.filter((id) => id != connection.userData.id))
+            }
         }
     )
 
@@ -15,7 +19,7 @@ export class RoomStore extends Store {
     public addClientObservable = new Subject<string>()
     public removeClientObservable = new Subject<string>()
 
-    constructor(clients: Array<string>) {
+    constructor(clients: Array<string>, private readonly maxClients: number = 10) {
         super()
         this.clients = clients
     }

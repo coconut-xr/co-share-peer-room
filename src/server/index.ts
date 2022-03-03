@@ -1,7 +1,6 @@
-import { rootStore } from "co-share"
 import { connectionMiddleware } from "co-share-socketio/server"
 import { Server } from "socket.io"
-import { RoomStore } from ".."
+import { rootStore } from ".."
 
 const io = new Server({
     cors: {
@@ -10,8 +9,6 @@ const io = new Server({
     },
 })
 
-rootStore.addStore(new RoomStore([]), "room")
-
-io.use(connectionMiddleware(async (socket) => ({ id: socket.id })))
+io.use(connectionMiddleware(async (socket) => ({ id: socket.id }), rootStore))
 
 io.listen(8081)

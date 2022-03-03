@@ -1,6 +1,5 @@
-import { useIncommingPeerStreams, useOutgoingPeerStream, usePeerConnection } from "co-share-peer/react"
+import { useIncommingPeerStreams, useOutgoingPeerStream } from "co-share-peer/react"
 import { Suspense, useCallback, useMemo, useState } from "react"
-import { Observable } from "rxjs"
 import { Instance, Options } from "simple-peer"
 import { Connection, RootStore } from "co-share"
 import { useMediaDevices, useSelectDefaultMediaDevice } from "co-media"
@@ -11,8 +10,10 @@ import MD from "../content/stream.md"
 import { SocketIOConnection } from "co-share-socketio/react"
 import { useStoreSubscription } from "co-share/react"
 import { Socket } from "socket.io-client"
-import { RoomStore } from "co-share-peer-room"
+import { RoomStore, rootStore } from "co-share-peer-room"
 import { useRoom } from "co-share-peer-room/react"
+import ReactLoading from "react-loading"
+import { RoomSelector } from "../components/room-selector"
 
 export default function Index() {
     return (
@@ -44,24 +45,34 @@ function socketUserData(socket: Socket) {
     return { id: socket.id }
 }
 
-const url = typeof global.window === "undefined" ? "" : `${window.location.protocol}//${window.location.hostname}:8082`
+const url = typeof global.window === "undefined" ? "" : `${window.location.protocol}//${window.location.hostname}:8081`
 
 export function Environment() {
     return (
-        <SocketIOConnection userData={socketUserData} fallback="Connecting ..." url={url}>
-            <Suspense fallback={"Loading ..."}>
-                <ConnectingPage />
-            </Suspense>
+        <SocketIOConnection providedRootStore={rootStore} userData={socketUserData} fallback="Connecting ..." url={url}>
+            <RoomSelector rootStore={rootStore}>
+                {(roomId) => (
+                    <Suspense fallback={<ReactLoading width={35} height={35} type="spin" color="#fff" />}>
+                        <ConnectingPage roomId={roomId} />
+                    </Suspense>
+                )}
+            </RoomSelector>
         </SocketIOConnection>
     )
 }
 
-function ConnectingPage() {
-    const store = useStoreSubscription("room", 1000, (clients: Array<string>) => new RoomStore(clients))
-    const rootStore = useMemo(() => new RootStore(new Map()), [store])
+function ConnectingPage({ roomId }: { roomId: string }) {
+    const store = useStoreSubscription(
+        roomId,
+        1000,
+        (clients: Array<string>) => new RoomStore(clients),
+        undefined,
+        rootStore
+    )
+    const p2pRootStore = useMemo(() => new RootStore(new Map()), [store])
     const connections = useRoom(
         store,
-        rootStore,
+        p2pRootStore,
         useCallback(
             (id) => ({
                 initiator: id > store.mainLink.connection.userData.id,
@@ -98,7 +109,11 @@ function ConnectedPage({ connections }: { connections: Array<Connection> }) {
         <div className="d-flex flex-grow-1 flex-column overflow-hidden flex-basis-0">
             <div className="d-flex flex-grow-1 flex-basis-0 flex-row overflow-hidden justify-content-around overflow-hidden">
                 {connections.map((connection) => (
-                    <SlaveStreamPage connection={connection} outgoingStreams={outgoingStreams} />
+                    <SlaveStreamPage
+                        key={connection.userData.id}
+                        connection={connection}
+                        outgoingStreams={outgoingStreams}
+                    />
                 ))}
             </div>
             <div className="d-flex flex-row align-items-center justify-content-center">
