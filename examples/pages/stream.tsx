@@ -45,7 +45,7 @@ function socketUserData(socket: Socket) {
     return { id: socket.id }
 }
 
-const url = typeof global.window === "undefined" ? "" : `${window.location.protocol}//${window.location.hostname}:8081`
+const url = typeof global.window === "undefined" ? "" : `https://cspr-provider.azurewebsites.net`
 
 export function Environment() {
     return (
