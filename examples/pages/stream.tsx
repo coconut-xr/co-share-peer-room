@@ -83,10 +83,31 @@ function ConnectingPage({ roomId }: { roomId: string }) {
     )
 
     return (
-        <Suspense fallback={null}>
-            <ConnectedPage connections={connections} />
-        </Suspense>
+        <Notice connectionAmount={connections.length}>
+            <Suspense fallback={null}>
+                <ConnectedPage connections={connections} />
+            </Suspense>
+        </Notice>
     )
+}
+
+function Notice({ children, connectionAmount }: { connectionAmount: number; children: JSX.Element }) {
+    const [confirmed, setConfirmed] = useState(false)
+
+    if (confirmed) {
+        return children
+    } else {
+        return (
+            <div className="flex-grow-1 d-flex align-items-center justify-content-center flex-column">
+                <div className="d-flex flex-column rounded shadow p-3">
+                    <h5>You are joining a room with {connectionAmount} users.</h5>
+                    <button onClick={() => setConfirmed(true)} className="btn btn-primary">
+                        Ok
+                    </button>
+                </div>
+            </div>
+        )
+    }
 }
 
 function ConnectedPage({ connections }: { connections: Array<Connection> }) {
@@ -137,6 +158,7 @@ function SlaveStreamPage({
     outgoingStreams: Array<MediaStream>
     connection: Connection
 }) {
+    //TODO: we only start listening to the stream changes on here, but we should start listening right at the beginning when we establish the connection
     const incommingStreams = useIncommingPeerStreams(connection.userData.peer)
     useOutgoingPeerStream(connection.userData.peer, outgoingStreams)
 

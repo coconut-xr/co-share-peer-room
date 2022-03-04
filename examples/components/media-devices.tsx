@@ -71,7 +71,7 @@ export function Stream({ stream }: { stream: MediaStream }): JSX.Element {
     useLayoutEffect(() => {
         if (ref.current != null) {
             ref.current.srcObject = stream
-            ref.current.play()
+            ref.current.play().catch(console.error)
         }
     }, [stream])
     switch (type) {
