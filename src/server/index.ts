@@ -1,6 +1,7 @@
 import { connectionMiddleware } from "co-share-socketio/server"
 import { Server } from "socket.io"
 import { rootStore } from ".."
+import { createServer } from "http"
 
 const io = new Server({
     cors: {
@@ -11,6 +12,13 @@ const io = new Server({
 
 io.use(connectionMiddleware(async (socket) => ({ id: socket.id }), rootStore))
 
-console.log(`running on port "${process.env.PORT}"`)
+const server = createServer((req, res) => {
+    res.writeHead(404)
+    res.end()
+})
 
-io.listen((process.env.PORT as any) ?? 8080)
+io.listen(server)
+
+server.listen((process.env.PORT as any) ?? 8080)
+
+console.log(`running on port "${process.env.PORT}"`)
