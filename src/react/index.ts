@@ -3,14 +3,14 @@ import { useEffect, useState } from "react"
 import { RoomStore } from ".."
 import { Subscription } from "rxjs"
 import { filter, map } from "rxjs/operators"
-import { connectPeer } from "co-share-peer"
-import { Instance, Options } from "simple-peer"
+import { ConnectOptions, connectPeer, StreamingInstance } from "co-share-peer"
+import { Instance } from "simple-peer"
 
 export function useRoom(
     room: RoomStore,
     rootStore: RootStore,
-    generateOptions: (clientId: string) => Options,
-    generateUserData?: (instance: Instance) => any
+    generateOptions: (clientId: string) => ConnectOptions,
+    generateUserData?: (instance: Instance | StreamingInstance) => any
 ): Array<Connection> {
     const [connections, setConnections] = useState<Array<Connection>>([])
     useEffect(() => {

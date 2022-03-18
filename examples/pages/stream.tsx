@@ -32,11 +32,6 @@ export default function Index() {
     )
 }
 
-const optionsC1: Options = {
-    initiator: true,
-}
-const optionsC2: Options = {}
-
 function generateUserData(instance: Instance) {
     return { instance }
 }
@@ -76,6 +71,7 @@ function ConnectingPage({ roomId }: { roomId: string }) {
         useCallback(
             (id) => ({
                 initiator: id > store.mainLink.connection.userData.id,
+                observeStreams: true,
             }),
             [store.mainLink.connection.userData.id]
         ),
@@ -159,8 +155,8 @@ function SlaveStreamPage({
     connection: Connection
 }) {
     //TODO: we only start listening to the stream changes on here, but we should start listening right at the beginning when we establish the connection
-    const incommingStreams = useIncommingPeerStreams(connection.userData.peer)
-    useOutgoingPeerStream(connection.userData.peer, outgoingStreams)
+    const incommingStreams = useIncommingPeerStreams(connection.userData.instance)
+    useOutgoingPeerStream(connection.userData.instance, outgoingStreams)
 
     return (
         <div className="d-flex flex-grow-1 flex-basis-0 flex-column overflow-hidden justify-content-around overflow-hidden">
