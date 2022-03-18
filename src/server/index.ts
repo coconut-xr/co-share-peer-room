@@ -11,4 +11,6 @@ const io = new Server({
 
 io.use(connectionMiddleware(async (socket) => ({ id: socket.id }), rootStore))
 
-io.listen(process.env.PORT == null ? 8080 : Number.parseInt(process.env.PORT))
+console.log(`running on port "${process.env.PORT}"`)
+
+io.listen((process.env.PORT as any) ?? 8080)
